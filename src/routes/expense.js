@@ -35,6 +35,21 @@ expenseRouter.post("/expense/create", userAuth, async (req, res) => {
       return res.status(400).json({ message: "Calculation is incorrect" });
     }
 
+    const isPaidByValid = paidBy.every((user) =>
+      group.participants.includes(user.email)
+    );
+    const isOwedByValid = owedBy.every((user) =>
+      group.participants.includes(user.email)
+    );
+
+    if (!isPaidByValid || !isOwedByValid) {
+      return res.status(400).json({
+        message: "All users in paidBy and owedBy must be group participants",
+      });
+    }
+
+    console.log(group);
+
     const newExpense = new Expense({
       name,
       amount,
@@ -104,11 +119,23 @@ expenseRouter.patch("/expense/:expenseId", userAuth, async (req, res) => {
     }
 
     const { name, amount, paidBy, owedBy, currency } = req.body;
-    expense.name = name;
-    expense.amount = amount;
-    expense.paidBy = paidBy;
-    expense.owedBy = owedBy;
-    expense.currency = currency;
+
+    if (name) {
+      expense.name = name;
+    }
+    if (amount) {
+      expense.amount = amount;
+    }
+    if (paidBy?.length > 0) {
+      expense.paidBy = paidBy;
+    }
+    if (owedBy?.length > 0) {
+      expense.owedBy = owedBy;
+    }
+    if (currency) {
+      expense.currency = currency;
+    }
+
     await expense.save();
     return res.status(200).json({ data: expense });
   } catch (err) {

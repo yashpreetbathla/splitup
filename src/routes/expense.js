@@ -56,25 +56,65 @@ expenseRouter.post("/expense/create", userAuth, async (req, res) => {
 });
 
 expenseRouter.get("/expense/:expenseId", userAuth, async (req, res) => {
-  const user = req.user;
-  const expenseId = req.params.expenseId;
-  const expense = await Expense.findById(expenseId);
-  return res.status(200).json({ data: expense });
+  try {
+    const user = req.user;
+    const expenseId = req.params.expenseId;
+    const expense = await Expense.findById(expenseId);
+    return res.status(200).json({ data: expense });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: err });
+  }
 });
 
 expenseRouter.get(
   "/expense/group/summary/:groupId",
   userAuth,
   async (req, res) => {
-    const groupId = req.params.groupId;
-    const expenses = await Expense.find({ groupId });
+    try {
+      const groupId = req.params.groupId;
+      const expenses = await Expense.find({ groupId });
 
-    const { userSet, totalPendingAmountArray } = calculateExpense(expenses);
+      const { userSet, totalPendingAmountArray } = calculateExpense(expenses);
 
-    return res.status(200).json({
-      data: { expenses, userSet, totalPendingAmountArray },
-    });
+      return res.status(200).json({
+        data: { expenses, userSet, totalPendingAmountArray },
+      });
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json({ message: err });
+    }
   }
 );
+
+expenseRouter.patch("/expense/:expenseId", userAuth, async (req, res) => {
+  try {
+    const expenseId = req.params.expenseId;
+    const expense = await Expense.findById(expenseId);
+
+    if (!expense) {
+      return res.status(404).json({ message: "Expense not found" });
+    }
+
+    const user = req.user;
+    if (expense.createdBy.toString() !== user._id.toString()) {
+      return res
+        .status(403)
+        .json({ message: "You are not the creator of this expense" });
+    }
+
+    const { name, amount, paidBy, owedBy, currency } = req.body;
+    expense.name = name;
+    expense.amount = amount;
+    expense.paidBy = paidBy;
+    expense.owedBy = owedBy;
+    expense.currency = currency;
+    await expense.save();
+    return res.status(200).json({ data: expense });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: err });
+  }
+});
 
 module.exports = expenseRouter;

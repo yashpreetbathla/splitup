@@ -12,10 +12,12 @@ const connectDB = require("./config/database");
 const authRouter = require("./routes/auth");
 const groupRouter = require("./routes/group");
 const expenseRouter = require("./routes/expense");
+const profileRouter = require("./routes/profile");
 
 app.use("/", authRouter);
 app.use("/", groupRouter);
 app.use("/", expenseRouter);
+app.use("/", profileRouter);
 
 connectDB()
   .then(() => {

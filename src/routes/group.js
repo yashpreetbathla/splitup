@@ -10,6 +10,14 @@ groupRouter.post("/group/create", userAuth, async (req, res) => {
 
     const user = req.user;
 
+    if (!participants.includes(user.email)) {
+      return res.status(400).json({ message: "You are not a participant" });
+    }
+
+    if (admins.length === 0) {
+      return res.status(400).json({ message: "Admins are required" });
+    }
+
     const newGroup = new Group({
       name,
       photoUrl,
@@ -18,9 +26,11 @@ groupRouter.post("/group/create", userAuth, async (req, res) => {
       createdBy: user._id,
     });
 
-    await newGroup.save();
+    const newGroupData = await newGroup.save();
 
-    return res.status(200).json({ message: "Group created successfully" });
+    return res
+      .status(200)
+      .json({ message: "Group created successfully", data: newGroupData });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Internal server error" });

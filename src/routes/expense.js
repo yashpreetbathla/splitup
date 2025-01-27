@@ -2,6 +2,7 @@ const express = require("express");
 const { userAuth } = require("../middlewares/auth");
 const Expense = require("../models/expense");
 const Group = require("../models/groups");
+const calculateExpense = require("../utils/calculateExpense");
 
 const expenseRouter = express.Router();
 
@@ -53,5 +54,27 @@ expenseRouter.post("/expense/create", userAuth, async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 });
+
+expenseRouter.get("/expense/:expenseId", userAuth, async (req, res) => {
+  const user = req.user;
+  const expenseId = req.params.expenseId;
+  const expense = await Expense.findById(expenseId);
+  return res.status(200).json({ data: expense });
+});
+
+expenseRouter.get(
+  "/expense/group/summary/:groupId",
+  userAuth,
+  async (req, res) => {
+    const groupId = req.params.groupId;
+    const expenses = await Expense.find({ groupId });
+
+    const { userSet, totalPendingAmountArray } = calculateExpense(expenses);
+
+    return res.status(200).json({
+      data: { expenses, userSet, totalPendingAmountArray },
+    });
+  }
+);
 
 module.exports = expenseRouter;

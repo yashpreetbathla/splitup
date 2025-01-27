@@ -26,18 +26,8 @@ const ExpenseSchema = new mongoose.Schema({
     ref: "Group",
     required: true,
   },
-  paidBy: [
-    {
-      type: ExpenseObjSchema,
-      required: true,
-    },
-  ],
-  owedBy: [
-    {
-      type: ExpenseObjSchema,
-      required: true,
-    },
-  ],
+  paidBy: [ExpenseObjSchema],
+  owedBy: [ExpenseObjSchema],
   status: {
     type: String,
     enum: ["pending", "paid"],

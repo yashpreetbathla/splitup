@@ -3,11 +3,17 @@ const app = express();
 
 require("dotenv").config();
 
+app.use(express.json());
+
 const connectDB = require("./config/database");
 
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
+
+const authRouter = require("./routes/auth");
+
+app.use("/", authRouter);
 
 connectDB()
   .then(() => {

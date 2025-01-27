@@ -11,9 +11,11 @@ const connectDB = require("./config/database");
 
 const authRouter = require("./routes/auth");
 const groupRouter = require("./routes/group");
+const expenseRouter = require("./routes/expense");
 
 app.use("/", authRouter);
 app.use("/", groupRouter);
+app.use("/", expenseRouter);
 
 connectDB()
   .then(() => {

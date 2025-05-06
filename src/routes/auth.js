@@ -68,4 +68,13 @@ authRouter.post("/login", async (req, res) => {
   return res.status(400).json({ message: "User not found" });
 });
 
+authRouter.post("/logout", async (req, res) => {
+  try {
+    res.clearCookie("token");
+    res.send("User logged out successfully");
+  } catch (err) {
+    res.status(400).send("Error logging out: " + err.message);
+  }
+});
+
 module.exports = authRouter;

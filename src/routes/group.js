@@ -11,17 +11,22 @@ groupRouter.post("/group/create", userAuth, async (req, res) => {
 
     const user = req.user;
 
-    if (!participants.includes(user.email)) {
-      return res.status(400).json({ message: "You are not a participant" });
-    }
-
-    if (admins.length === 0) {
+    if (admins?.length === 0) {
       return res.status(400).json({ message: "Admins are required" });
     }
 
     const participantsData = [...participants];
+    const adminsData = [...admins];
 
-    admins.forEach((admin) => {
+    if (!adminsData.includes(user.email)) {
+      adminsData.push(user.email);
+    }
+
+    if (!participantsData.includes(user.email)) {
+      participantsData.push(user.email);
+    }
+
+    adminsData.forEach((admin) => {
       if (participantsData.includes(admin)) {
         return;
       }

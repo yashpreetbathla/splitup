@@ -25,8 +25,8 @@ expenseRouter.post("/expense/create", userAuth, async (req, res) => {
         .json({ message: "You are not a participant of this group" });
     }
 
-    const paidByAmount = paidBy.reduce((acc, curr) => acc + curr.amount, 0);
-    const owedByAmount = owedBy.reduce((acc, curr) => acc + curr.amount, 0);
+    const paidByAmount = paidBy?.reduce((acc, curr) => acc + curr.amount, 0);
+    const owedByAmount = owedBy?.reduce((acc, curr) => acc + curr.amount, 0);
 
     const isCalculationCorrect =
       paidByAmount === owedByAmount && amount === paidByAmount;
@@ -138,6 +138,30 @@ expenseRouter.patch("/expense/:expenseId", userAuth, async (req, res) => {
 
     await expense.save();
     return res.status(200).json({ data: expense });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: err });
+  }
+});
+
+//delete expense
+expenseRouter.delete("/expense/:expenseId", userAuth, async (req, res) => {
+  try {
+    const expenseId = req.params.expenseId;
+    const expense = await Expense.findById(expenseId);
+
+    if (!expense) {
+      return res.status(404).json({ message: "Expense not found" });
+    }
+
+    const user = req.user;
+    if (expense.createdBy.toString() !== user._id.toString()) {
+      return res
+        .status(403)
+        .json({ message: "You are not the creator of this expense" });
+    }
+    await expense.deleteOne();
+    return res.status(200).json({ message: "Expense deleted successfully" });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: err });
